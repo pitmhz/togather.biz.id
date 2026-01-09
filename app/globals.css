@@ -51,21 +51,21 @@
   Dark:  Dry Sage Dark (Tactical, Deep Green-Grey)
 */
 :root {
-  /* Light Mode */
-  --background: var(--color-dry-sage-50);
-  --background-secondary: var(--color-dry-sage-100);
+  /* Light Mode - Hims Warm Cream */
+  --background: #F9F7F2;
+  --background-secondary: #F3F0E8;
   --card: #FFFFFF;
   /* Keep cards white for contrast on light */
 
   --foreground: var(--color-dry-sage-950);
   --muted-foreground: var(--color-dry-sage-600);
-  --accent: var(--color-dry-sage-600);
-  /* Use Sage as primary accent */
+  --accent: var(--color-dry-sage-500);
+  /* Sage green accent */
 
   /* Soft border with opacity */
-  --border: oklch(86.66% 0.024 101.72 / 0.15);
-  --input: oklch(86.66% 0.024 101.72 / 0.2);
-  --ring: var(--color-dry-sage-600);
+  --border: oklch(86.66% 0.024 101.72 / 0.2);
+  --input: oklch(86.66% 0.024 101.72 / 0.25);
+  --ring: var(--color-dry-sage-500);
 }
 
 /* Dark Mode */

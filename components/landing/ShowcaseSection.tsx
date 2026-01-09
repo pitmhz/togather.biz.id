@@ -4,264 +4,288 @@ import * as React from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useGSAP } from "@gsap/react"
 import gsap from "gsap"
-import { ArrowLeft, ArrowRight } from "lucide-react"
+import { ArrowLeft, ArrowRight, Info } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 import Link from "next/link"
+import Image from "next/image"
 
-// --- DATA STRUCTURE ---
-const MISSION_MODULES = [
+// --- SLIDE DATA ---
+const SLIDES = [
     {
-        id: "mission-control",
-        title: "PUSAT PELAYANAN",
-        caption: "Dashboard terpadu untuk mengelola seluruh aspek pelayanan gereja Anda.",
-        image: "/images/showcase/mission-control.jpg", // Placeholder
-        accent: "indigo", // Denim equivalent
-        color: "from-text-primary/10 to-transparent",
-        textColor: "text-text-primary"
+        id: "pusat",
+        title: "Pusat Pelayanan",
+        caption: "Pantau seluruh aktivitas jemaat dalam satu dashboard yang teduh.",
+        image: "/images/showcase/pusat.png",
+        detail: "Analitik pertumbuhan jemaat realtime."
     },
     {
-        id: "service-dna",
-        title: "ESSENSI PELAYANAN",
-        caption: "Susun liturgi dan rundown ibadah dengan teratur dan penuh perhatian.",
-        image: "/images/showcase/service-dna.jpg",
-        accent: "blue",
-        color: "from-text-accent/10 to-transparent",
-        textColor: "text-text-accent"
+        id: "ibadah",
+        title: "Alur Ibadah",
+        caption: "Otomasi liturgi dan jadwal pelayanan pengerja dengan rapi.",
+        image: "/images/showcase/ibadah.png",
+        detail: "Drag-and-drop rundown builder."
     },
     {
-        id: "financial-pulse",
-        title: "FINANCIAL PULSE",
-        caption: "Transparansi total untuk kolekte, budget, dan pelaporan keuangan.",
-        image: "/images/showcase/financial.jpg",
-        accent: "emerald",
-        color: "from-status-success/10 to-transparent",
-        textColor: "text-status-success"
+        id: "komsel",
+        title: "Manajemen Komsel",
+        caption: "Pererat hubungan antar anggota melalui pelaporan kelompok sel yang interaktif.",
+        image: "/images/showcase/komsel.png",
+        detail: "Absensi digital berbasis lokasi."
     },
     {
-        id: "task-force",
-        title: "TIM PELAYANAN",
-        caption: "Koordinasi volunteer dan pengerja dalam satu sistem yang mudah diakses.",
-        image: "/images/showcase/task-force.jpg",
-        accent: "amber",
-        color: "from-status-warning/10 to-transparent",
-        textColor: "text-status-warning"
+        id: "kas",
+        title: "Transparansi Kas",
+        caption: "Kelola persembahan dan anggaran pelayanan secara akuntabel.",
+        image: "/images/showcase/kas.png",
+        detail: "Laporan keuangan multi-channel."
     },
     {
-        id: "logistics-hub",
-        title: "KOMUNITAS SEL",
-        caption: "Pantau pertumbuhan kelompok sel dan perkuat persekutuan jemaat.",
-        image: "/images/showcase/logistics.jpg",
-        accent: "orange",
-        color: "from-status-warning/10 to-transparent",
-        textColor: "text-status-warning"
+        id: "volunteer",
+        title: "Tim Volunteer",
+        caption: "Koordinasi jadwal pelayan jemaat tanpa tumpang tindih.",
+        image: "/images/showcase/volunteer.png",
+        detail: "Notifikasi otomatis via WhatsApp."
     },
     {
-        id: "komsel-intel",
-        title: "PERTUMBUHAN KOMSEL",
-        caption: "Kelola komsel dengan lebih efektif dan penuh kasih.",
-        image: "/images/showcase/komsel.jpg",
-        accent: "pink",
-        color: "from-text-accent/10 to-transparent",
-        textColor: "text-text-accent"
+        id: "warta",
+        title: "Ruang Warta",
+        caption: "Sampaikan kabar terbaru gereja langsung ke ponsel jemaat.",
+        image: "/images/showcase/warta.png",
+        detail: "Broadcast berita tanpa biaya SMS."
     }
 ]
 
 export function ShowcaseSection() {
     const [currentIndex, setCurrentIndex] = React.useState(0)
-    const [direction, setDirection] = React.useState(0)
-    const imageContainerRef = React.useRef<HTMLDivElement>(null)
+    const [isHovering, setIsHovering] = React.useState(false)
     const imageRef = React.useRef<HTMLDivElement>(null)
+    const activeSlide = SLIDES[currentIndex]
 
-    // Autoplay
+    // Auto-progress state
+    const [progressKey, setProgressKey] = React.useState(0)
+
+    // Autoplay every 5s
     React.useEffect(() => {
-        const timer = setInterval(() => {
-            nextSlide()
+        if (isHovering) return
+
+        const interval = setInterval(() => {
+            setCurrentIndex((prev) => (prev + 1) % SLIDES.length)
+            setProgressKey(prev => prev + 1) // Reset progress bar animation
         }, 5000)
-        return () => clearInterval(timer)
-    }, [currentIndex])
+        return () => clearInterval(interval)
+    }, [isHovering])
 
-    const nextSlide = () => {
-        setDirection(1)
-        setCurrentIndex((prev) => (prev + 1) % MISSION_MODULES.length)
+    // Manual navigation resets stats
+    const goNext = () => {
+        setCurrentIndex((prev) => (prev + 1) % SLIDES.length)
+        setProgressKey(prev => prev + 1)
+    }
+    const goPrev = () => {
+        setCurrentIndex((prev) => (prev - 1 + SLIDES.length) % SLIDES.length)
+        setProgressKey(prev => prev + 1)
     }
 
-    const prevSlide = () => {
-        setDirection(-1)
-        setCurrentIndex((prev) => (prev - 1 + MISSION_MODULES.length) % MISSION_MODULES.length)
-    }
-
-    const activeModule = MISSION_MODULES[currentIndex]
-
-    // GSAP 3D Tilt on Hover
+    // GSAP 3D Tilt on hover (kept from previous version)
     useGSAP(() => {
-        const card = imageContainerRef.current
-        if (!card) return
+        if (!imageRef.current) return
+        const el = imageRef.current
 
         const handleMouseMove = (e: MouseEvent) => {
-            const rect = card.getBoundingClientRect()
+            const rect = el.getBoundingClientRect()
             const x = e.clientX - rect.left
             const y = e.clientY - rect.top
             const centerX = rect.width / 2
             const centerY = rect.height / 2
+            const rotateX = ((y - centerY) / centerY) * -3 // Reduced intensity for elegance
+            const rotateY = ((x - centerX) / centerX) * 3
 
-            const rotateX = ((y - centerY) / centerY) * -5
-            const rotateY = ((x - centerX) / centerX) * 5
-
-            gsap.to(card, {
-                rotateX: rotateX,
-                rotateY: rotateY,
-                duration: 0.4,
-                ease: "power2.out",
-                transformPerspective: 1000,
+            gsap.to(el, {
+                rotateX,
+                rotateY,
+                duration: 0.5,
+                ease: "power2.out"
             })
         }
 
         const handleMouseLeave = () => {
-            gsap.to(card, {
-                rotateX: 0,
-                rotateY: 0,
-                duration: 0.6,
-                ease: "elastic.out(1, 0.5)",
-            })
+            gsap.to(el, { rotateX: 0, rotateY: 0, duration: 0.8, ease: "power2.out" })
         }
 
-        card.addEventListener("mousemove", handleMouseMove)
-        card.addEventListener("mouseleave", handleMouseLeave)
+        el.addEventListener("mousemove", handleMouseMove)
+        el.addEventListener("mouseleave", handleMouseLeave)
 
         return () => {
-            card.removeEventListener("mousemove", handleMouseMove)
-            card.removeEventListener("mouseleave", handleMouseLeave)
+            el.removeEventListener("mousemove", handleMouseMove)
+            el.removeEventListener("mouseleave", handleMouseLeave)
         }
-    }, { scope: imageContainerRef })
-
-    // GSAP Image Transition Effect
-    useGSAP(() => {
-        // Parallax swipe effect on image change
-        gsap.fromTo(imageRef.current,
-            { scale: 1.1, opacity: 0.8 },
-            { scale: 1, opacity: 1, duration: 0.8, ease: "power2.out" }
-        )
     }, [currentIndex])
 
     return (
-        <section className="py-24 px-6 overflow-hidden relative transition-colors duration-700 bg-background-primary">
+        <section id="features" className="py-24 px-6 bg-transparent overflow-hidden">
+            <div className="max-w-7xl mx-auto">
 
-            {/* Dynamic Background Blob */}
-            <div className={cn(
-                "absolute inset-0 bg-gradient-to-br opacity-30 transition-colors duration-1000",
-                activeModule.color
-            )} />
+                {/* Section Header */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="text-center mb-16"
+                >
+                    <h2 className="text-3xl md:text-5xl font-black font-heading tracking-tight mb-4 text-text-primary">
+                        Fitur yang Menyederhanakan
+                    </h2>
+                    <p className="text-lg text-text-secondary max-w-2xl mx-auto">
+                        Enam modul terintegrasi untuk mengelola seluruh aspek pelayanan gereja Anda.
+                    </p>
+                </motion.div>
 
-            <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+                {/* Split Screen Layout */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
-                {/* LEFT: Content & Navigation */}
-                <div className="order-2 lg:order-1 flex flex-col justify-center min-h-[400px]">
-                    <div className="mb-8">
+                    {/* Left: Text Content */}
+                    <div className="order-2 lg:order-1 relative z-10">
                         <AnimatePresence mode="wait">
                             <motion.div
-                                key={activeModule.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
+                                key={activeSlide.id}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 20 }}
                                 transition={{ duration: 0.4 }}
+                                className="space-y-8"
                             >
-                                <span className={cn("text-sm font-bold tracking-widest uppercase mb-2 block", activeModule.textColor)}>
-                                    Module {currentIndex + 1} / {MISSION_MODULES.length}
-                                </span>
-                                <h2 className="text-4xl md:text-6xl font-black font-heading tracking-tight mb-4 text-text-primary leading-none">
-                                    {activeModule.title}
-                                </h2>
-                                <p className="text-xl text-text-secondary leading-relaxed max-w-md">
-                                    {activeModule.caption}
-                                </p>
+                                {/* Slide Counter & Progress */}
+                                <div className="flex items-center gap-4">
+                                    <span className="text-sm font-mono text-text-accent font-bold">
+                                        {String(currentIndex + 1).padStart(2, '0')}
+                                    </span>
+                                    <div className="h-0.5 w-12 bg-border relative overflow-hidden">
+                                        <motion.div
+                                            key={progressKey}
+                                            initial={{ width: "0%" }}
+                                            animate={{ width: "100%" }}
+                                            transition={{ duration: 5, ease: "linear" }}
+                                            className="absolute top-0 left-0 h-full bg-text-accent"
+                                        />
+                                    </div>
+                                    <span className="text-sm font-mono text-text-secondary">
+                                        {String(SLIDES.length).padStart(2, '0')}
+                                    </span>
+                                </div>
+
+                                <div>
+                                    {/* Title */}
+                                    <h3 className="text-4xl md:text-6xl font-black font-heading tracking-tight text-text-primary mb-4">
+                                        {activeSlide.title}
+                                    </h3>
+
+                                    {/* Caption */}
+                                    <p className="text-xl text-text-secondary leading-relaxed max-w-md">
+                                        {activeSlide.caption}
+                                    </p>
+                                </div>
+
+                                {/* CTA */}
+                                <Link href="https://app.togather.biz.id" target="_blank">
+                                    <Button size="lg" className="rounded-full px-8 bg-text-primary text-background-primary hover:opacity-90">
+                                        Coba Sekarang
+                                    </Button>
+                                </Link>
                             </motion.div>
                         </AnimatePresence>
-                    </div>
 
-                    <div className="flex items-center gap-6">
-                        <Link href="https://app.togather.biz.id" target="_blank">
-                            <Button size="lg" className="rounded-full px-8 text-base shadow-xl bg-text-primary text-background-primary hover:opacity-90">
-                                Buka Dashboard
-                            </Button>
-                        </Link>
-
-                        <div className="flex gap-2">
+                        {/* Navigation Arrows */}
+                        <div className="flex gap-3 mt-12">
                             <Button
                                 variant="outline"
                                 size="icon"
-                                onClick={prevSlide}
-                                className="rounded-full w-12 h-12 border hover:bg-background-secondary border-text-secondary/10"
+                                onClick={goPrev}
+                                className="rounded-full border-border hover:bg-white hover:text-text-primary transition-colors w-12 h-12"
                             >
                                 <ArrowLeft className="w-5 h-5" />
                             </Button>
                             <Button
                                 variant="outline"
                                 size="icon"
-                                onClick={nextSlide}
-                                className="rounded-full w-12 h-12 border hover:bg-background-secondary border-text-secondary/10"
+                                onClick={goNext}
+                                className="rounded-full border-border hover:bg-white hover:text-text-primary transition-colors w-12 h-12"
                             >
                                 <ArrowRight className="w-5 h-5" />
                             </Button>
                         </div>
                     </div>
 
-                    {/* Progress Bar */}
-                    <div className="mt-12 w-full h-1 bg-text-secondary/10 rounded-full overflow-hidden">
-                        <motion.div
-                            className={cn("h-full", activeModule.textColor.replace('text-', 'bg-'))}
-                            initial={{ width: "0%" }}
-                            animate={{ width: "100%" }}
-                            transition={{ duration: 5, ease: "linear", repeat: 0 }}
-                            key={activeModule.id} // Reset on change
-                        />
-                    </div>
-                </div>
-
-                {/* RIGHT: Image Showcase */}
-                <div className="order-1 lg:order-2 perspective-1000">
+                    {/* Right: Image */}
                     <div
-                        ref={imageContainerRef}
-                        className="relative aspect-[4/3] md:aspect-[16/10] rounded overflow-hidden shadow-2xl bg-background-secondary border border-text-secondary/10"
-                        style={{ transformStyle: "preserve-3d" }} // Important for 3D tilt
+                        className="order-1 lg:order-2"
+                        onMouseEnter={() => setIsHovering(true)}
+                        onMouseLeave={() => setIsHovering(false)}
                     >
-                        {/* Image Container with Parallax Logic */}
-                        <div ref={imageRef} className="absolute inset-0 w-full h-full">
-                            {/* Placeholder Gradient if image fails, or solid color fallback */}
-                            <div className={cn(
-                                "w-full h-full bg-gradient-to-br flex items-center justify-center",
-                                activeModule.color.replace('20', '80') // Darker version for visual weight
-                            )}>
-                                {/* 
-                     Ideally we would use <Image src={activeModule.image} ... /> here.
-                     For now, using a stylized abstract placeholder to match the "No placeholders" rule 
-                     but dynamically generated via CSS since we don't have the literal jpgs yet. 
-                     
-                     If you want real placeholders, we can generate them or use a service.
-                     For now, I'll create a nice CSS composition.
-                 */}
-                                <div className="text-center p-8 transform translate-z-10">
-                                    <span className="text-9xl opacity-20 font-black text-white mix-blend-overlay">
-                                        {currentIndex + 1}
-                                    </span>
-                                    <p className="text-white/50 font-bold tracking-widest mt-4 uppercase">
-                                        {activeModule.title} VISUAL
-                                    </p>
-                                </div>
-                            </div>
+                        <div
+                            ref={imageRef}
+                            className="relative rounded-[32px] overflow-hidden shadow-2xl shadow-text-accent/10 bg-background-card border border-border aspect-[4/3] group"
+                            style={{ perspective: "1000px", transformStyle: "preserve-3d" }}
+                        >
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={activeSlide.id}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.6 }}
+                                    className="relative w-full h-full"
+                                >
+                                    {/* Slow Zoom Pan Effect */}
+                                    <motion.div
+                                        initial={{ scale: 1 }}
+                                        animate={{ scale: 1.05 }}
+                                        transition={{ duration: 5, ease: "linear" }}
+                                        className="w-full h-full relative"
+                                    >
+                                        <Image
+                                            src={activeSlide.image}
+                                            alt={activeSlide.title}
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    </motion.div>
+
+                                    {/* Scan Light Effect */}
+                                    <motion.div
+                                        initial={{ x: "-100%" }}
+                                        animate={{ x: "200%" }}
+                                        transition={{ duration: 1.5, ease: "easeInOut", delay: 0.2 }}
+                                        className="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 pointer-events-none z-10"
+                                    />
+
+                                    {/* Interactive Hotspot / Tooltip */}
+                                    <motion.div
+                                        initial={{ scale: 0, opacity: 0 }}
+                                        animate={{ scale: 1, opacity: 1 }}
+                                        transition={{ delay: 0.5, type: "spring" }}
+                                        className="absolute bottom-6 right-6 z-20"
+                                    >
+                                        <div className="relative group/hotspot">
+                                            <div className="w-10 h-10 rounded-full bg-white/90 backdrop-blur text-text-accent flex items-center justify-center shadow-lg cursor-help">
+                                                <Info className="w-5 h-5" />
+                                            </div>
+                                            <div className="absolute w-10 h-10 rounded-full bg-white/50 animate-ping inset-0 -z-10" />
+
+                                            {/* Tooltip Content */}
+                                            <div className="absolute bottom-full right-0 mb-3 w-48 bg-white/90 backdrop-blur-md rounded-xl p-3 shadow-xl border border-border opacity-0 group-hover/hotspot:opacity-100 transition-opacity pointer-events-none group-hover/hotspot:pointer-events-auto origin-bottom-right transform scale-95 group-hover/hotspot:scale-100">
+                                                <p className="text-xs font-bold text-text-primary mb-1">Fitur Unggulan</p>
+                                                <p className="text-xs text-text-secondary leading-snug">
+                                                    {activeSlide.detail}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+
+                                </motion.div>
+                            </AnimatePresence>
                         </div>
-
-                        {/* Glass Overlay/Gloss */}
-                        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background/50 to-transparent opacity-60" />
-
-                        {/* Tactical Corners */}
-                        <div className="absolute top-4 left-4 w-4 h-4 border-l-2 border-t-2 border-white/30 rounded-tl" />
-                        <div className="absolute top-4 right-4 w-4 h-4 border-r-2 border-t-2 border-white/30 rounded-tr" />
-                        <div className="absolute bottom-4 left-4 w-4 h-4 border-l-2 border-b-2 border-white/30 rounded-bl" />
-                        <div className="absolute bottom-4 right-4 w-4 h-4 border-r-2 border-b-2 border-white/30 rounded-br" />
                     </div>
-                </div>
 
+                </div>
             </div>
         </section>
     )
