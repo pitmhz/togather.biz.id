@@ -7,8 +7,9 @@ import type { NewsPost } from '@/lib/supabase/types';
  * Server Action Response Types
  */
 interface ActionResponse<T> {
+    success: boolean;
     data: T | null;
-    error: string | null;
+    message: string | null;
 }
 
 /**
@@ -19,13 +20,6 @@ interface ActionResponse<T> {
  * 
  * @param limit - Maximum number of posts to return (default: 10)
  * @returns Array of news posts or error
- * 
- * @example
- * ```tsx
- * const { data: posts, error } = await getLatestNews(5);
- * if (error) console.error(error);
- * posts?.map(post => <NewsCard key={post.id} post={post} />);
- * ```
  */
 export async function getLatestNews(
     limit: number = 10
@@ -36,21 +30,31 @@ export async function getLatestNews(
         const { data, error } = await supabase
             .from('news_posts')
             .select('*')
+            .eq('status', 'published')
             .lte('published_at', new Date().toISOString())
             .order('published_at', { ascending: false })
             .limit(limit);
 
         if (error) {
             console.error('[getLatestNews] Supabase error:', error);
-            return { data: null, error: error.message };
+            return {
+                success: false,
+                data: null,
+                message: error.message
+            };
         }
 
-        return { data: data as NewsPost[], error: null };
+        return {
+            success: true,
+            data: data as NewsPost[],
+            message: 'News fetched successfully'
+        };
     } catch (err) {
         console.error('[getLatestNews] Unexpected error:', err);
         return {
+            success: false,
             data: null,
-            error: err instanceof Error ? err.message : 'Failed to fetch news posts'
+            message: err instanceof Error ? err.message : 'Failed to fetch news posts'
         };
     }
 }
@@ -76,7 +80,7 @@ export async function getPostBySlug(
 ): Promise<ActionResponse<NewsPost>> {
     try {
         if (!slug || typeof slug !== 'string') {
-            return { data: null, error: 'Invalid slug provided' };
+            return { success: false, data: null, message: 'Invalid slug provided' };
         }
 
         const supabase = await createClient();
@@ -91,18 +95,19 @@ export async function getPostBySlug(
         if (error) {
             // PGRST116 = Row not found (not an error for this use case)
             if (error.code === 'PGRST116') {
-                return { data: null, error: null };
+                return { success: true, data: null, message: 'Post not found' };
             }
             console.error('[getPostBySlug] Supabase error:', error);
-            return { data: null, error: error.message };
+            return { success: false, data: null, message: error.message };
         }
 
-        return { data: data as NewsPost, error: null };
+        return { success: true, data: data as NewsPost, message: null };
     } catch (err) {
         console.error('[getPostBySlug] Unexpected error:', err);
         return {
+            success: false,
             data: null,
-            error: err instanceof Error ? err.message : 'Failed to fetch post'
+            message: err instanceof Error ? err.message : 'Failed to fetch post'
         };
     }
 }
@@ -133,15 +138,16 @@ export async function getNewsByCategory(
 
         if (error) {
             console.error('[getNewsByCategory] Supabase error:', error);
-            return { data: null, error: error.message };
+            return { success: false, data: null, message: error.message };
         }
 
-        return { data: data as NewsPost[], error: null };
+        return { success: true, data: data as NewsPost[], message: null };
     } catch (err) {
         console.error('[getNewsByCategory] Unexpected error:', err);
         return {
+            success: false,
             data: null,
-            error: err instanceof Error ? err.message : 'Failed to fetch news by category'
+            message: err instanceof Error ? err.message : 'Failed to fetch news by category'
         };
     }
 }
@@ -162,7 +168,7 @@ export async function searchNews(
 ): Promise<ActionResponse<NewsPost[]>> {
     try {
         if (!query || query.trim().length < 2) {
-            return { data: [], error: null };
+            return { success: true, data: [], message: null };
         }
 
         const supabase = await createClient();
@@ -178,15 +184,16 @@ export async function searchNews(
 
         if (error) {
             console.error('[searchNews] Supabase error:', error);
-            return { data: null, error: error.message };
+            return { success: false, data: null, message: error.message };
         }
 
-        return { data: data as NewsPost[], error: null };
+        return { success: true, data: data as NewsPost[], message: null };
     } catch (err) {
         console.error('[searchNews] Unexpected error:', err);
         return {
+            success: false,
             data: null,
-            error: err instanceof Error ? err.message : 'Failed to search news'
+            message: err instanceof Error ? err.message : 'Failed to search news'
         };
     }
 }
@@ -230,19 +237,20 @@ export async function createNewsPost(
 
         if (error) {
             console.error('[createNewsPost] Supabase error:', error);
-            return { data: null, error: error.message };
+            return { success: false, data: null, message: error.message };
         }
 
         console.log('[createNewsPost] Post created:', data.id);
-        return { data: data as NewsPost, error: null };
+        return { success: true, data: data as NewsPost, message: 'Post created successfully' };
     } catch (err) {
         if (err instanceof AdminAuthError) {
-            return { data: null, error: err.message };
+            return { success: false, data: null, message: err.message };
         }
         console.error('[createNewsPost] Unexpected error:', err);
         return {
+            success: false,
             data: null,
-            error: err instanceof Error ? err.message : 'Failed to create post'
+            message: err instanceof Error ? err.message : 'Failed to create post'
         };
     }
 }
@@ -265,7 +273,7 @@ export async function updateNewsPost(
         await validateAdminSession();
 
         if (!id) {
-            return { data: null, error: 'Post ID is required' };
+            return { success: false, data: null, message: 'Post ID is required' };
         }
 
         const supabase = await createClient();
@@ -282,19 +290,20 @@ export async function updateNewsPost(
 
         if (error) {
             console.error('[updateNewsPost] Supabase error:', error);
-            return { data: null, error: error.message };
+            return { success: false, data: null, message: error.message };
         }
 
         console.log('[updateNewsPost] Post updated:', id);
-        return { data: data as NewsPost, error: null };
+        return { success: true, data: data as NewsPost, message: 'Post updated successfully' };
     } catch (err) {
         if (err instanceof AdminAuthError) {
-            return { data: null, error: err.message };
+            return { success: false, data: null, message: err.message };
         }
         console.error('[updateNewsPost] Unexpected error:', err);
         return {
+            success: false,
             data: null,
-            error: err instanceof Error ? err.message : 'Failed to update post'
+            message: err instanceof Error ? err.message : 'Failed to update post'
         };
     }
 }
@@ -315,7 +324,7 @@ export async function deleteNewsPost(
         await validateAdminSession();
 
         if (!id) {
-            return { data: null, error: 'Post ID is required' };
+            return { success: false, data: null, message: 'Post ID is required' };
         }
 
         const supabase = await createClient();
@@ -327,19 +336,20 @@ export async function deleteNewsPost(
 
         if (error) {
             console.error('[deleteNewsPost] Supabase error:', error);
-            return { data: null, error: error.message };
+            return { success: false, data: null, message: error.message };
         }
 
         console.log('[deleteNewsPost] Post deleted:', id);
-        return { data: { deleted: true }, error: null };
+        return { success: true, data: { deleted: true }, message: 'Post deleted successfully' };
     } catch (err) {
         if (err instanceof AdminAuthError) {
-            return { data: null, error: err.message };
+            return { success: false, data: null, message: err.message };
         }
         console.error('[deleteNewsPost] Unexpected error:', err);
         return {
+            success: false,
             data: null,
-            error: err instanceof Error ? err.message : 'Failed to delete post'
+            message: err instanceof Error ? err.message : 'Failed to delete post'
         };
     }
 }
@@ -364,18 +374,19 @@ export async function getAllNewsPostsAdmin(): Promise<ActionResponse<NewsPost[]>
 
         if (error) {
             console.error('[getAllNewsPostsAdmin] Supabase error:', error);
-            return { data: null, error: error.message };
+            return { success: false, data: null, message: error.message };
         }
 
-        return { data: data as NewsPost[], error: null };
+        return { success: true, data: data as NewsPost[], message: null };
     } catch (err) {
         if (err instanceof AdminAuthError) {
-            return { data: null, error: err.message };
+            return { success: false, data: null, message: err.message };
         }
         console.error('[getAllNewsPostsAdmin] Unexpected error:', err);
         return {
+            success: false,
             data: null,
-            error: err instanceof Error ? err.message : 'Failed to fetch posts'
+            message: err instanceof Error ? err.message : 'Failed to fetch posts'
         };
     }
 }

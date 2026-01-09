@@ -1,0 +1,21 @@
+{
+    "design_language": "Visual-Centric Minimalism",
+    "references": {
+        "hims_layout": {
+            "grid_style": "Bento Grid with variable card heights",
+            "border_radius": "24px to 32px (extra rounded)",
+            "whitespace": "Expansive / High breathing room",
+            "palette": "Warm neutrals, muted pastels, high-contrast black text"
+        },
+        "luma_ui": {
+            "information_density": "High but structured",
+            "typography": "Bold titles with tight tracking",
+            "badges": "Status indicators (IN 28M, Going) with vibrant colors"
+        },
+        "tactical_blend": {
+            "theme": "Industrial Modern",
+            "primary_font": "Switzer (Local)",
+            "accent_color": "Denim-500 / Emerald-500"
+        }
+    }
+}

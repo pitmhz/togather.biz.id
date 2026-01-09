@@ -1,65 +1,69 @@
-import Image from "next/image";
+import { Navbar } from "@/components/landing/Navbar";
+import { Hero } from "@/components/landing/Hero";
+import { ShowcaseSection } from "@/components/landing/ShowcaseSection";
+import { FeaturesSection } from "@/components/landing/FeaturesSection";
+import { NewsGrid } from "@/components/landing/NewsGrid";
+import { LeadForm } from "@/components/landing/LeadForm";
+import { Footer } from "@/components/landing/Footer";
+import { getLatestNews } from "@/app/actions/news";
+import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 
-export default function Home() {
+export default async function Home() {
+  // Fetch latest news (Mission Log)
+  const newsRequest = await getLatestNews(3);
+  const latestNews = newsRequest.success && newsRequest.data ? newsRequest.data : [];
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="min-h-screen bg-background-primary overflow-x-hidden font-sans">
+      <Navbar />
+
+      {/* BACKGROUND ELEMENTS */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-indigo-50/50 dark:bg-indigo-900/10 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-emerald-50/50 dark:bg-emerald-900/10 rounded-full blur-[100px] translate-x-1/2 translate-y-1/2" />
+      </div>
+
+      <div className="relative z-10">
+
+        {/* VISUAL HERO SECTION */}
+        <Hero />
+
+        {/* TACTICAL SHOWCASE (ADAPTIVE SLIDESHOW) */}
+        <ShowcaseSection />
+
+        {/* FEATURES GRID (BENTO INTELLIGENCE) */}
+        <FeaturesSection />
+
+        {/* MISSION LOG (NEWS) */}
+        <section id="mission-log" className="py-24 px-6 bg-background-secondary/30 dark:bg-background-secondary/10">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
+              <div>
+                <Badge className="mb-4">Intel</Badge>
+                <h2 className="text-3xl md:text-4xl font-bold font-heading text-text-primary dark:text-white">
+                  Mission Log
+                </h2>
+              </div>
+              <Link href="/news" className="text-text-accent font-medium hover:text-indigo-700 dark:hover:text-indigo-400 transition-colors flex items-center gap-2">
+                View Full Log
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+            </div>
+
+            <NewsGrid posts={latestNews} />
+          </div>
+        </section>
+
+        {/* MISSION BRIEFING (LEAD FORM) */}
+        <LeadForm />
+
+        {/* TACTICAL FOOTER */}
+        <Footer />
+
+      </div>
     </div>
   );
 }

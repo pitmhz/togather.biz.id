@@ -5,6 +5,12 @@
 export type NewsCategory = 'Announcement' | 'Update' | 'Tips';
 
 /**
+ * News Post Status Types
+ * Workflow states for content management
+ */
+export type NewsStatus = 'draft' | 'published' | 'archived';
+
+/**
  * News Post Database Row Type
  */
 export interface NewsPost {
@@ -16,6 +22,7 @@ export interface NewsPost {
     author_id: string | null;
     published_at: string;
     category: NewsCategory;
+    status: NewsStatus;
     created_at: string;
     updated_at: string;
 }
@@ -31,6 +38,7 @@ export interface NewsPostInsert {
     author_id?: string | null;
     published_at?: string;
     category: NewsCategory;
+    status?: NewsStatus;
 }
 
 /**
@@ -43,6 +51,7 @@ export interface NewsPostUpdate {
     cover_image?: string | null;
     published_at?: string;
     category?: NewsCategory;
+    status?: NewsStatus;
     updated_at?: string;
 }
 

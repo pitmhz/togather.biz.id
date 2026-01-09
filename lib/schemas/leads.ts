@@ -88,16 +88,19 @@ export function validateLeadForm(data: unknown): {
     success: boolean;
     data?: LeadFormInput;
     error?: string;
+    errors?: Record<string, string[] | undefined>;
     isBot?: boolean;
 } {
     try {
         const result = leadFormSchema.safeParse(data);
 
         if (!result.success) {
+            const flattened = result.error.flatten();
             const firstError = result.error.issues[0];
             return {
                 success: false,
                 error: firstError?.message || 'Invalid form data',
+                errors: flattened.fieldErrors,
             };
         }
 

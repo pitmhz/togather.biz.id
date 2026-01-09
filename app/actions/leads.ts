@@ -13,6 +13,7 @@ interface ActionResponse<T> {
     success: boolean;
     data: T | null;
     message: string;
+    errors?: Record<string, string[] | undefined>;
 }
 
 /**
@@ -34,12 +35,17 @@ const TACTICAL_MESSAGES = {
  * Validates input with Zod and checks honeypot for bot prevention.
  * Rate limited to 3 submissions per hour per IP.
  * 
- * @param formData - Form data containing lead information
+ * @param prevState - Previous state (required for useActionState)
+ * @param formData - Form data from the client
  * @returns Success message or error
  */
 export async function submitLead(
-    formData: Record<string, unknown>
+    prevState: any,
+    formData: FormData
 ): Promise<ActionResponse<{ id: string }>> {
+    // Convert FormData to object for validation
+    const rawData = Object.fromEntries(formData.entries());
+
     try {
         // Get client IP for rate limiting
         const headersList = await headers();
@@ -57,7 +63,7 @@ export async function submitLead(
         }
 
         // Validate and check honeypot
-        const validation = validateLeadForm(formData);
+        const validation = validateLeadForm(rawData);
 
         if (!validation.success) {
             // If bot detected, return success to avoid revealing detection
@@ -74,6 +80,7 @@ export async function submitLead(
                 success: false,
                 data: null,
                 message: validation.error || TACTICAL_MESSAGES.error,
+                errors: validation.errors,
             };
         }
 

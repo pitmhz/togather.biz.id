@@ -1,26 +1,121 @@
 @import "tailwindcss";
 
+@theme {
+  /* Dry Sage Palette (OKLCH) */
+  --color-dry-sage-50: oklch(96.68% 0.005 95.10);
+  --color-dry-sage-100: oklch(93.51% 0.013 102.02);
+  --color-dry-sage-200: oklch(86.66% 0.024 101.72);
+  --color-dry-sage-300: oklch(79.96% 0.038 102.19);
+  --color-dry-sage-400: oklch(73.09% 0.051 103.73);
+  --color-dry-sage-500: oklch(66.15% 0.065 103.89);
+  --color-dry-sage-600: oklch(56.22% 0.053 104.05);
+  --color-dry-sage-700: oklch(45.91% 0.043 102.75);
+  --color-dry-sage-800: oklch(35.15% 0.031 105.35);
+  --color-dry-sage-900: oklch(23.27% 0.018 102.93);
+  --color-dry-sage-950: oklch(19.32% 0.013 107.60);
+
+  /* Semantic Colors Mapped to Palette */
+  --color-background-primary: var(--background);
+  --color-background-secondary: var(--background-secondary);
+  --color-background-card: var(--card);
+
+  --color-text-primary: var(--foreground);
+  --color-text-secondary: var(--muted-foreground);
+  --color-text-accent: var(--accent);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-status-success: oklch(64.8% 0.150 160);
+  /* Emerald equivalent in OKLCH */
+  --color-status-warning: oklch(70.2% 0.183 70);
+  /* Amber equivalent */
+  --color-status-error: oklch(63.7% 0.237 29);
+  /* Red equivalent */
+
+  /* Typography */
+  --font-heading: var(--font-switzer);
+  --font-body: var(--font-switzer);
+
+  /* Border Radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
+  --radius-xl: 2rem;
+}
+
+/*
+  --- THEME CONFIGURATION ---
+  Light: Dry Sage Light (Clean, Organic)
+  Dark:  Dry Sage Dark (Tactical, Deep Green-Grey)
+*/
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Light Mode */
+  --background: var(--color-dry-sage-50);
+  --background-secondary: var(--color-dry-sage-100);
+  --card: #FFFFFF;
+  /* Keep cards white for contrast on light */
+
+  --foreground: var(--color-dry-sage-950);
+  --muted-foreground: var(--color-dry-sage-600);
+  --accent: var(--color-dry-sage-600);
+  /* Use Sage as primary accent */
+
+  /* Soft border with opacity */
+  --border: oklch(86.66% 0.024 101.72 / 0.15);
+  --input: oklch(86.66% 0.024 101.72 / 0.2);
+  --ring: var(--color-dry-sage-600);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Dark Mode */
+.dark {
+  --background: var(--color-dry-sage-950);
+  --background-secondary: var(--color-dry-sage-900);
+  --card: var(--color-dry-sage-900);
+
+  --foreground: var(--color-dry-sage-50);
+  --muted-foreground: var(--color-dry-sage-400);
+  --accent: var(--color-dry-sage-400);
+  /* Lighter Sage for dark mode accent */
+
+  --border: oklch(35.15% 0.031 105.35 / 0.2);
+  /* Soft border for dark */
+  --input: oklch(35.15% 0.031 105.35 / 0.2);
+  --ring: var(--color-dry-sage-400);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+  transition: background-color 0.5s ease, color 0.5s ease;
+  letter-spacing: -0.015em;
+  /* Compact body text */
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.03em;
+  /* Tight headings */
+}
+
+/* Utility for glassmorphism */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass {
+  background: rgba(11, 17, 33, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
